@@ -4,6 +4,6 @@ Bumblebee has two exports. As it is a dll, it's exports important because they c
 We are going to look at the export starting at ```start	0000000140057D2C	[main entry]```
 This is the 'main' function of the malware.  
 
-![[/resources/bumblebee/Pasted image 20240406192349.png]]
+![image1](/resources/bumblebee/image1.png)
 
-![[/resources/bumblebee/Pasted image 20240406192134.png]]
+![image2](/resources/bumblebee/image2.png)
