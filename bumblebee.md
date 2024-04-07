@@ -5,4 +5,4 @@ We are going to look at the export starting at ```start	0000000140057D2C	[main e
 This is the 'main' function of the malware.  
 
 ![[/resources/bumblebee/Pasted image 20240406192349.png]]
-![[/resources/bumblebee/Pasted image 20240406192134.png]]
+![[/resources/bumblebee/Pasted image 20240406192134.png]]  
