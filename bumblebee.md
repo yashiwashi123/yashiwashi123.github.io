@@ -21,7 +21,7 @@ Shortly after this interesting string, a function call is made that takes anothe
 
 ![alt text](/resources/bumblebee/image5.png)
 
-![alt text](image-1.png)
+![alt text](/resources/bumblebee/image-1.png)
 here we get the hex representation of the second interesting string
 
 ![alt text](image-2.png)
