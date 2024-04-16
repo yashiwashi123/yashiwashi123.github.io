@@ -119,6 +119,7 @@ Following this, bumblebee injects itself into NtQueueApcThread by
 
 
 #### dex
+Could be used to download and execute
 the `dex` command appears to queue bumblebee to create a randomly named .exe file
 
 
