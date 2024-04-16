@@ -24,12 +24,37 @@ Shortly after this interesting string, a function call is made that takes anothe
 ![alt text](/resources/bumblebee/image-1.png)
 here we get the hex representation of the second interesting string
 
-![alt text](image-2.png)
+![alt text](/resources/bumblebee/image-2.png)
 
 If we use the initial interesting string as a passphrase for a RC4 encryption algorithm to decrypt the strange jumbled up encrypted looking string, we get an interesting output
 
-![alt text](image-3.png)
+![alt text](/resources/bumblebee/image-3.png)
 
 The output reads `lnk1` 
 This indicates that this version of bumblebee is being distributed via lnk email attachments. Furthermore, it possibly indicates that the authors of bumblebee set their versioning to indicate the initial vector of infection. 
-Shortly after
+
+Shortly after, the malware generates hashes and passes them to the `CreateEventW` API call
+
+![alt text](/resources/bumblebee/image7.png)
+
+`CreateEventW` is used to ensure the malware isn't already running, hence the check shown in the screenshot against error code 183 or `ERROR_ALREADY_EXISTS`
+
+Following this we see some strings indicating the malware is collecting information about the infected host. Specifically username and Domain name.
+![alt text](/resources/bumblebee/image8.png)
+![alt text](/resources/bumblebee/image9.png)
+
+Next we move onto address `0014001085E` 
+Here a function is called that does various interesting things.
+
+First, an API call to GetSpecialFolderPath with an interesting array of paths
+![alt text](/resources/bumblebee/image10.png)
+
+Then a function is called that generates a random executable name. This is likely to avoid basic file-name based detection
+![alt text](/resources/bumblebee/image11.png)
+
+We then enter a subroutine that gathers information about the infected host.
+![alt text](/resources/bumblebee/image12.png)
+
+Bumblebee then loops through it's own threads using `CreateToolhelp32Snapshot`
+
+
