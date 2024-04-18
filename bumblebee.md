@@ -9,15 +9,14 @@ This is the 'main' function of the malware.
 
 ![image2](/resources/bumblebee/image2.png)
 
-When we scroll into the main function a little, we start noticing some intersting things. 
-Let's start with this string:
+When we scroll into the main function a little, we can see a string being passed as an argument:
 ![image3](/resources/bumblebee/image3.png)
 
 I know that bumblebee uses RC4 encryption from two sources. One, from reading about the malware from articles like [this](https://www.proofpoint.com/us/blog/threat-insight/bumblebee-is-still-transforming) and two, from Flare's capa explorer plugin which indicates it found a pattern matching RC4 encryption. 
 
 ![image4](/resources/bumblebee/image4.png)
 
-Shortly after this interesting string, a function call is made that takes another intersting string as an arugment
+Shortly after this string, a function call is made that takes another intersting string as an arugment
 
 ![alt text](/resources/bumblebee/image5.png)
 
@@ -114,6 +113,19 @@ After performing privilege escalation, bumblebee writes shellcode to memory. Spe
   return result;
 
 ```
+Let's take a closer look at v6-v9. If we convert the decimal values to hex values, it will look like this: 
+```
+  v6[0] = 0x48C03148;                      
+  v6[1] = 0x3148DA31;
+  v6[2] = 0x3E8B9C9;
+  v6[3] = 0x1BA0000;
+  v6[4] = 0x48000000;
+  v7 = 0xB8;
+  *&v8[7] = 0xEBD0FF11;
+  v9 = 0xDF;
+```
+
+If we 
 Following this, bumblebee injects itself into NtQueueApcThread by 
 
 
