@@ -30,7 +30,12 @@ If we use the initial interesting string as a passphrase for a RC4 encryption al
 ![alt text](/resources/bumblebee/image-3.png)
 
 The output reads `lnk1` 
-This indicates that this version of bumblebee is being distributed via lnk email attachments. Furthermore, it possibly indicates that the authors of bumblebee set their versioning to indicate the initial vector of infection. 
+This indicates that this version of bumblebee is being distributed via lnk email attachments. Furthermore, it possibly indicates that the authors of bumblebee set their versioning or campaignIDs to indicate the initial vector of infection. 
+
+Now, something interesting to observer here. If we reference some older samples, specifically one researched by Proofpoint back in 2022, we note that the campaignID was previoiusly stored in plaintext. 
+The sample I'm analysing comes from [here](https://bazaar.abuse.ch/browse.php?search=sha256%3Aaf59ce785e062bf0d198eb4e3bdbc1ee57d58164de6dc1faf38836c670ef6f7d) 
+It was uploaded in September of 2023 and has a compilation timestamp of `2023-09-04 09:02:26`
+We note that the campaignID is no longer being stored in plaintext and instead encrypted via RC4. We can conclude that Bumblebee was seeing active development since the 2022 Proofpoint blog.
 
 Shortly after, the malware generates hashes and passes them to the `CreateEventW` API call
 
@@ -87,6 +92,8 @@ Bumblebee loads Advapi32.dll and uses
   CloseHandle(hObject);
   return v6;
 ```
+
+#### dij
 After performing privilege escalation, bumblebee writes shellcode to memory. Specifically, bumblebee overwrites the Sleep function in Windows with shellcode: 
 
 ```
@@ -125,7 +132,24 @@ Let's take a closer look at v6-v9. If we convert the decimal values to hex value
   v9 = 0xDF;
 ```
 
-If we 
+If we compile this code and disassemble it we get this: 
+
+```
+.text:0000000000400080                 public _start
+.text:0000000000400080 _start:                                 ; DATA XREF: LOAD:0000000000400018↑o
+.text:0000000000400080                 sal     byte ptr [rcx], 48h ; Alternative name is '_start'
+.text:0000000000400080                                         ; shellcode
+.text:0000000000400084                 xor     [rax-26h], ecx
+.text:0000000000400087                 xor     [rsi], edi
+.text:0000000000400089                 mov     ebx, [rcx+rdx*4+480000BAh]
+.text:0000000000400089 ; ---------------------------------------------------------------------------
+.text:0000000000400090                 dq 11FFD0EBB8000000h, 3CB8FFFFFFE2E8DFh
+.text:00000000004000A0                 db 3 dup(0), 31h, 0FFh, 0Fh, 5
+.text:00000000004000A0 _text           ends
+.text:00000000004000A0
+.text:00000000004000A0
+.text:00000000004000A0                 end _start
+```
 Following this, bumblebee injects itself into NtQueueApcThread by 
 
 
