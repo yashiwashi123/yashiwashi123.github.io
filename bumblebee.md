@@ -47,6 +47,44 @@ Following this we see some strings indicating the malware is collecting informat
 ![alt text](/resources/bumblebee/image8.png)
 ![alt text](/resources/bumblebee/image9.png)
 
+### Anti-Analysis
+
+##### VM Detection
+
+There's a function that has a lot of strings related to virtual machines. 
+It runs a series of functions that check to see if Bumblebee is running on a virtual machine. 
+
+Here's an example: 
+```
+v1 = SysAllocString(L"WQL");
+v2 = SysAllocString(L"SELECT * FROM Win32_BaseBoard");
+```
+Here, bumblebee queries the wql (sql for wmi) for `Win32_BaseBoard`. This is basically querying wmi for the host's motherboard. 
+
+It then continues to check if the motherboard is a vmware motherboard here: 
+
+```
+      (*(*v5 + 32i64))(v5, 0xFFFFFFFFi64, 1i64, &v13, &v12);
+        if ( !v12 )
+          break;
+        if ( (*(*v13 + 32i64))(v13, L"Product", 0i64, &pvarg, 0i64, 0i64) >= 0 && pvarg.vt != 1 )
+        {
+          if ( (pvarg.vt & 8) != 0 && wcsstr(pvarg.bstrVal, L"VirtualBox") )
+            v0 = 1;
+          VariantClear(&pvarg);
+        }
+        memset(v9, 0, sizeof(v9));
+        v10 = 0;
+        v11 = 0;
+        *&pvarg.vt = *v9;
+        pvarg.pRecInfo = (0i64 >> 112);
+        if ( (*(*v13 + 32i64))(v13, L"Manufacturer", 0i64, &pvarg, 0i64, 0i64) >= 0 && pvarg.vt != 1 )
+        {
+          if ( (pvarg.vt & 8) != 0 )
+          {
+            if ( wcsstr(pvarg.bstrVal, L"Oracle Corporation") )
+```
+Keep in mind, this is just one check. There are various others for other virtualization platforms including qemu, virtualbox and parallels 
 ### C2 Command Handling
 
 This section of code looks like it's related to the handling of commands sent by the C2. There are various command names, each one doing something different. The commands I have found are shi, dij, dex, sdl, ins, gdt and plg
