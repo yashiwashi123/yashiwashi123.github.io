@@ -12,9 +12,13 @@ This is the 'main' function of the malware.
 When we scroll into the main function a little, we can see a string being passed as an argument:
 ![image3](/resources/bumblebee/image3.png)
 
+Here is the hex representation of said string: 
+`7AE5E93A3176116F05E7D9340565B7993D86C48D5E36147BE7D546D28CAFA0F1F2698B11951B24D9702DB827A70990F6F9272677B4187F616F58350DDC7BA3B8F49F66115DF39529B63F7FA7C3581D41`
+
 I know that bumblebee uses RC4 encryption from two sources. One, from reading about the malware from articles like [this](https://www.proofpoint.com/us/blog/threat-insight/bumblebee-is-still-transforming) and two, from Flare's capa explorer plugin which indicates it found a pattern matching RC4 encryption. 
 
 ![image4](/resources/bumblebee/image4.png)
+Here is the output `lnk1`
 
 Shortly after this string, a function call is made that takes another intersting string as an arugment
 
