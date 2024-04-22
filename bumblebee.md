@@ -252,10 +252,16 @@ If we compile this code and disassemble it we get this:
 .text:0000000000400080                                         ; shellcode
 .text:0000000000400084                 xor     [rax-26h], ecx
 .text:0000000000400087                 xor     [rsi], edi
-.text:0000000000400089                 mov     ebx, [rcx+rdx*4+480000BAh]
-.text:0000000000400089 ; ---------------------------------------------------------------------------
-.text:0000000000400090                 dq 11FFD0EBB8000000h, 3CB8FFFFFFE2E8DFh
-.text:00000000004000A0                 db 3 dup(0), 31h, 0FFh, 0Fh, 5
+.text:0000000000400089                 mov     ebx, [rcx+rdx*4+0BAh]
+.text:0000000000400090                 add     [rax], al
+.text:0000000000400093                 add     [rax+11FFD0EBh], bh
+.text:0000000000400099                 fucomip st, st
+.text:000000000040009B
+.text:000000000040009B loc_40009B:                             ; CODE XREF: .text:loc_40009B↑j
+.text:000000000040009B                 loope   near ptr loc_40009B+1
+.text:000000000040009B ; ---------------------------------------------------------------------------
+.text:000000000040009D                 db 2 dup(0FFh), 0B8h
+.text:00000000004000A0                 dq 50FFF310000003Ch
 .text:00000000004000A0 _text           ends
 .text:00000000004000A0
 .text:00000000004000A0
@@ -275,7 +281,7 @@ the `dex` command appears to queue bumblebee to create a randomly named .exe fil
 Looks as though it runs cmd.exe and runs mkdir and copy
 Additionally it looks like it is at least initializing COM proxies 
 Also has ability to open Powershell
-Potentially able to remove files from the victim 
+Able to remove files from the victim 
 
 #### ins 
 powershell remove dirs 
