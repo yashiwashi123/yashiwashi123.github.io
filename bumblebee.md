@@ -37,14 +37,20 @@ The output reads `lnk1`
 This indicates that this version of bumblebee is being distributed via lnk email attachments. Furthermore, it possibly indicates that the authors of bumblebee set their versioning or campaignIDs to indicate the initial vector of infection. 
 
 There's another argument being passed to a function directly after the lnk1 group string. 
-
+```
+  copy_string(v106, lnk1group, v9);
+  v105 = 15i64;
+  v104 = 0i64;
+  LOBYTE(v103[0]) = 0;
+  if ( byte_1400F2B40[0] )                      // IP addresses
+```
 If we apply the same process of decrypting it using RC4, we get a list of IP addresses and ports:
 
 `192.168.0.101:444,127.0.0.1:444,186.218.161.242:270`
+We can likely use these IPs as further means to categorize different campaigns of Bumblebee. 
 
 
-
-Now, something notable to observe here. If we reference some older samples, specifically one researched by Proofpoint back in 2022, we note that the campaignID was previoiusly stored in plaintext. 
+Now, there's something to observe here. If we reference some older samples, specifically one researched by Proofpoint back in 2022, we note that the campaignID was previoiusly stored in plaintext. 
 
 
 The sample I'm analysing comes from [here](https://bazaar.abuse.ch/browse.php?search=sha256%3Aaf59ce785e062bf0d198eb4e3bdbc1ee57d58164de6dc1faf38836c670ef6f7d) 
@@ -86,8 +92,22 @@ Shortly after, the malware generates hashes and passes them to the `CreateEventW
 `CreateEventW` is used to ensure the malware isn't already running, hence the check shown in the screenshot against error code 183 or `ERROR_ALREADY_EXISTS`
 
 Following this we see some strings indicating the malware is collecting information about the infected host. Specifically username and Domain name.
-![alt text](/resources/bumblebee/image8.png)
-![alt text](/resources/bumblebee/image9.png)
+```
+get_user_name(v137);
+    if ( v143 )
+    {
+      exception_handling_2(v137, "\n", 1i64);
+      v28 = sub_14000E020(v113, "User name: ", v142);
+      exception_handling_0(v137, v28, 0i64, -1i64);
+```
+```
+ get_domain(v153);
+    if ( v154 )
+    {
+      exception_handling_2(v137, "\n", 1i64);
+      v31 = sub_14000E020(v113, "Domain name: ", v153);
+      exception_handling_0(v137, v31, 0i64, -1i64);
+```
 
 ### Anti-Analysis
 
@@ -136,10 +156,18 @@ Let's look at what shi does in dpeth, then summarize what the rest of the comman
 
 If Bumblebee recieves the shi command, a function is called that does various interesting things.
 
-First, an API call to GetSpecialFolderPath with an interesting array of paths
+First, an API call to GetSpecialFolderPath with an interesting array of paths.
 ![alt text](/resources/bumblebee/image10.png)
 
-Then a function is called that generates a random executable name. This is likely to avoid basic file-name based detection
+It's important to note that GetSpecialFolderPath gets folders based on their CSIDL. 
+
+Here is the array of paths: 
+```
+"\\Windows Photo Viewer\\ImagingDevices."...
+"\\Windows Mail\\wab.exe"
+"\\Windows Mail\\wabmig.exe"
+```
+shi then randomly picks one of these executables, again, this is likely to avoid detection and to make analysis more difficult.
 ![alt text](/resources/bumblebee/image11.png)
 
 We then enter a subroutine that gathers information about the infected host.
@@ -149,7 +177,7 @@ Bumblebee then loops through it's own threads using `CreateToolhelp32Snapshot`, 
 
 ![alt text](/resources/bumblebee/image13.png)
 
-Bumblebee loads Advapi32.dll and uses 
+Bumblebee loads Advapi32.dll and uses it to escalate it's priveleges to debug. 
 
 ```  
   hObject = a1;
@@ -173,8 +201,11 @@ Bumblebee loads Advapi32.dll and uses
   return v6;
 ```
 
+SHI also has the ability to write shellcode to Sleep
+
 #### dij
-After performing privilege escalation, bumblebee writes shellcode to memory. Specifically, bumblebee overwrites the Sleep function in Windows with shellcode: 
+The dij command in this sample also has the ability to inject shellcode into sleep, but the shellcode in this command is slightly different. 
+Specifically, bumblebee overwrites the Sleep function in Windows with shellcode: 
 
 ```
   v6[0] = 1220555080;                           // These variables are actually shellcode beind displayed as decimal
