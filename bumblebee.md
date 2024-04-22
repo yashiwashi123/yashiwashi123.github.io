@@ -12,20 +12,20 @@ This is the 'main' function of the malware.
 When we scroll into the main function a little, we can see a string being passed as an argument:
 ![image3](/resources/bumblebee/image3.png)
 
-Here is the hex representation of said string: 
-`7AE5E93A3176116F05E7D9340565B7993D86C48D5E36147BE7D546D28CAFA0F1F2698B11951B24D9702DB827A70990F6F9272677B4187F616F58350DDC7BA3B8F49F66115DF39529B63F7FA7C3581D41`
+
 
 I know that bumblebee uses RC4 encryption from two sources. One, from reading about the malware from articles like [this](https://www.proofpoint.com/us/blog/threat-insight/bumblebee-is-still-transforming) and two, from Flare's capa explorer plugin which indicates it found a pattern matching RC4 encryption. 
 
 ![image4](/resources/bumblebee/image4.png)
-Here is the output `lnk1`
 
 Shortly after this string, a function call is made that takes another intersting string as an arugment
 
 ![alt text](/resources/bumblebee/image5.png)
 
 ![alt text](/resources/bumblebee/image-1.png)
-here we get the hex representation of the second interesting string
+
+Here is the hex representation of the second string: 
+`7AE5E93A3176116F05E7D9340565B7993D86C48D5E36147BE7D546D28CAFA0F1F2698B11951B24D9702DB827A70990F6F9272677B4187F616F58350DDC7BA3B8F49F66115DF39529B63F7FA7C3581D41`
 
 ![alt text](/resources/bumblebee/image-2.png)
 
@@ -36,7 +36,17 @@ If we use the initial interesting string as a passphrase for a RC4 encryption al
 The output reads `lnk1` 
 This indicates that this version of bumblebee is being distributed via lnk email attachments. Furthermore, it possibly indicates that the authors of bumblebee set their versioning or campaignIDs to indicate the initial vector of infection. 
 
-Now, something interesting to observer here. If we reference some older samples, specifically one researched by Proofpoint back in 2022, we note that the campaignID was previoiusly stored in plaintext. 
+There's another argument being passed to a function directly after the lnk1 group string. 
+
+If we apply the same process of decrypting it using RC4, we get a list of IP addresses and ports:
+
+`192.168.0.101:444,127.0.0.1:444,186.218.161.242:270`
+
+
+
+Now, something notable to observe here. If we reference some older samples, specifically one researched by Proofpoint back in 2022, we note that the campaignID was previoiusly stored in plaintext. 
+
+
 The sample I'm analysing comes from [here](https://bazaar.abuse.ch/browse.php?search=sha256%3Aaf59ce785e062bf0d198eb4e3bdbc1ee57d58164de6dc1faf38836c670ef6f7d) 
 It was uploaded in September of 2023 and has a compilation timestamp of `2023-09-04 09:02:26`
 We note that the campaignID is no longer being stored in plaintext and instead encrypted via RC4. We can conclude that Bumblebee was seeing active development since the 2022 Proofpoint blog.
