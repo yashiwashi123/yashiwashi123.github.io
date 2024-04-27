@@ -173,8 +173,9 @@ shi then randomly picks one of these executables, again, this is likely to avoid
 We then enter a subroutine that gathers information about the infected host.
 ![alt text](/resources/bumblebee/image12.png)
 
-Bumblebee then loops through it's own threads using `CreateToolhelp32Snapshot`, tries finding a specific one, then opens it
+Bumblebee then loops through  threads using `CreateToolhelp32Snapshot`, tries finding a specific one, then opens it. The thread it's looking for is in a suspended state to inject code. 
 
+If successful
 ![alt text](/resources/bumblebee/image13.png)
 
 Bumblebee loads Advapi32.dll and uses it to escalate it's priveleges to debug. 
@@ -286,9 +287,14 @@ Able to remove files from the victim
 #### ins 
 powershell remove dirs 
 
+Command to schedule a task in windows for persistence
+
+```
+v6 = sub_14000E020(v30, "schtasks.exe /F /create /sc minute /mo 4 /TN \"", v26);
+```
+
 #### gdt
 
-Not too sure what this one does
-
+named pipes
 #### plg
 Domain generation and connection handling 
