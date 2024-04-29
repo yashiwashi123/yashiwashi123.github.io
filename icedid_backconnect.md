@@ -24,7 +24,7 @@ Fortunately I came up with a script to quickly validate your potential backconne
 
 This script was developed by reading through [xors](https://nikpx.github.io/) technical analysis and finding a implementation of BokBot's BackConnect command decryption algorithm in python.
 
-```
+```python
 ror = lambda val, r_bits, max_bits: \
     ((val & (2**max_bits-1)) >> r_bits%max_bits) | \
     (val << (max_bits-(r_bits%max_bits)) & (2**max_bits-1))
