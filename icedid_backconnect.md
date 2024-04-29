@@ -3,7 +3,7 @@
 
 #### Summary
 
-This tutorial servers as a means to track BokBot, also know as IcedID, BackConnect infrastructure. BackConnect servers are used as C2 and include an VNC module thus allowing TAs remote access. They additinoally turn victim machines into socks5 proxies and allow TAs to execude commands remotely. You can read more about BackCOnnect [here](https://www.team-cymru.com/post/inside-the-icedid-backconnect-protocol).
+This tutorial servers as a means to track BokBot, also know as IcedID, BackConnect infrastructure. BackConnect servers are used as C2 and include an VNC module thus allowing TAs remote access. They additinoally turn victim machines into socks5 proxies and allow TAs to execude commands remotely. You can read more about BackConnect [here](https://www.team-cymru.com/post/inside-the-icedid-backconnect-protocol).
 
 This is a tutorial on how to track IcedID backconnect infrastructure. 
 
@@ -40,7 +40,7 @@ decoded_function_address = hex(rol(encoded_function,7,64) ^ 0x123456789ABCDEF)
 
 ```
 
-I extended this script by allowing the user to send encrypted data to a potential C2, running it through the decode function above, and printing the result. This script contains a base64 encoded string that BackConnect servers expect from new victims. It is esentially mimicking a compromised host asking the server for furture commands. I obtained this string by looking at a pcap of a compromised host uploaded to [Brad's wonderful blog](malware-traffic-analysis.net) and looking through communications between the compromised host and the C2. Eventually I found a crypted string that looked interesting in a packet.
+I extended this script by allowing the user to send encrypted data to a potential C2, running it through the decode function above, and printing the result. This script contains a base64 encoded string that BackConnect servers expect from new victims. It is esentially mimicking a compromised host asking the server for furture commands. I obtained this string by looking at a pcap of a compromised host uploaded to [Brad's wonderful blog](malware-traffic-analysis.net) and looking through communications between the compromised host and the C2. Eventually I found a crypted string that was a bot registration packet in the pcap.
 
 Here is the full script: 
 
