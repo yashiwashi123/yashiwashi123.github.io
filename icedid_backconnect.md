@@ -44,7 +44,7 @@ I extended this script by allowing the user to send encrypted data to a potentia
 
 Here is the full script: 
 
-```
+```python
 import socket
 import base64
 import binascii
