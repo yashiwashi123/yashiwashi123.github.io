@@ -305,6 +305,23 @@ v6 = sub_14000E020(v30, "schtasks.exe /F /create /sc minute /mo 4 /TN \"", v26);
 
 named pipes
 
-#### plg
-
+### Noise PSK 
+Opensource library for  encrypted communication
+This is how bumblebee communicates to the c2
+Here is a snippet of it being references in the code: 
+```c
+copy_string(a2, "Noise", 5ui64);
+  if ( !a4 && *a3 == 1 )
+    exception_handling_2(a2, "PSK", 3ui64);
+  exception_handling_2(a2, "_", 1ui64);
+  switch ( a3[1] )
+  {
+    case 0:
+      v8 = 2i64;
+      v9 = "NN";
+      break;
+    case 1:
+      v8 = 2i64;
+      v9 = "KN";
+```
 
