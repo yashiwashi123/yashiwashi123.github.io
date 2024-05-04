@@ -48,6 +48,7 @@ If we apply the same process of decrypting it using RC4, we get a list of IP add
 
 `192.168.0.101:444,127.0.0.1:444,186.218.161.242:270`
 We can likely use these IPs as further means to categorize different campaigns of Bumblebee. 
+These IPs are remnants from pre-dga bumblebee. They could potentially throw off researchers into thinking they are valid c2s. Additionally, they could potentially cause some havoc if, say, a tool automatically extracted these IPs and placed network blocks.
 
 
 Now, there's something to observe here. If we reference some older samples, specifically one researched by Proofpoint back in 2022, we note that the campaignID was previoiusly stored in plaintext. 
@@ -108,6 +109,23 @@ get_user_name(v137);
       v31 = sub_14000E020(v113, "Domain name: ", v153);
       exception_handling_0(v137, v31, 0i64, -1i64);
 ```
+
+### DGA
+We find the seed of the DGA by checking for the `.life` string in IDA and finding xrefs to it. 
+We find a string shortly after the first xref of `TEST_SEED_new_2`. This is the DGA seed for this sample. 
+Then we find some code immeditately following this that turns the string into an int
+```c
+v15 = *aTestSeedNew2;
+v16 = int_parsing(a100);
+v17 = int_parsing(a11);
+```
+Shortly following this, we see these variables passed to the DGA algorithm
+
+```c
+ DGA_algo(v131, v20, v15, v16, v17, v103, lpName);
+ ```
+
+
 
 ### Anti-Analysis
 
@@ -202,79 +220,69 @@ Bumblebee loads Advapi32.dll and uses it to escalate it's priveleges to debug.
   return v6;
 ```
 
-SHI also has the ability to write shellcode to Sleep
+SHI also has the ability to write shellcode 
 
-#### dij
-The dij command in this sample also has the ability to inject shellcode into sleep, but the shellcode in this command is slightly different. 
-Specifically, bumblebee overwrites the Sleep function in Windows with shellcode: 
+```c
+  char v11; // [rsp+90h] [rbp+30h] BYREF
 
-```
-  v6[0] = 1220555080;                           // These variables are actually shellcode beind displayed as decimal
+  shellcode[0] = 0x48C03148;                    // These variables are actually shellcode beind displayed as decimal
                                                 // 
-  v6[1] = 826858033;
-  v6[2] = 65583561;
-  v6[3] = 28966912;
-  v6[4] = 1207959552;
-  v7 = -72;
-  *&v8[7] = -338624751;
-  v9 = -33;
-  ModuleHandleA = GetModuleHandleA("kernel32.dll");
-  *v8 = GetProcAddress(ModuleHandleA, "SleepEx");// overwriting Sleep with shellcode
-  v3 = ntdll_handle_look_for_specific_mem_section(hProcess);
-  WriteProcessMemory = GetProcAddress(ModuleHandleA, "WriteProcessMemory");
-  VirtualProtectEx(hProcess, v3, 0x21ui64, 0x40u, &flOldProtect);
-  result = (WriteProcessMemory)(hProcess, v3, v6, 33i64, &v11);
-  if ( result )
-  {
-    VirtualProtectEx(hProcess, v3, 0x21ui64, flOldProtect, &flOldProtect);
-    return 1i64;
-  }
-  return result;
-
-```
-Let's take a closer look at v6-v9. If we convert the decimal values to hex values, it will look like this: 
-```
-  v6[0] = 0x48C03148;                      
-  v6[1] = 0x3148DA31;
-  v6[2] = 0x3E8B9C9;
-  v6[3] = 0x1BA0000;
-  v6[4] = 0x48000000;
+  shellcode[1] = 0x3148DA31;
+  shellcode[2] = 0x3E8B9C9;
+  shellcode[3] = 0x1BA0000;
+  shellcode[4] = 0x48000000;
   v7 = 0xB8;
   *&v8[7] = 0xEBD0FF11;
   v9 = 0xDF;
+  ModuleHandleA = GetModuleHandleA("kernel32.dll");
+  *v8 = GetProcAddress(ModuleHandleA, "SleepEx");// overwriting Sleep with shellcode
+  entrypoint_of_something = get_entrypoint_of_dll(hProcess);
+  WriteProcessMemory = GetProcAddress(ModuleHandleA, "WriteProcessMemory");
+  VirtualProtectEx(hProcess, entrypoint_of_something, 0x21ui64, 0x40u, &flOldProtect);
+  result = (WriteProcessMemory)(hProcess, entrypoint_of_something, shellcode, 33i64, &v11);
+  if ( result )
+  {
+    VirtualProtectEx(hProcess, entrypoint_of_something, 0x21ui64, flOldProtect, &flOldProtect);
+    return 1i64;
 ```
+
+Let's take a close look at the shellcode
 
 If we compile this code and disassemble it we get this: 
 
 ```
-.text:0000000000400080                 public _start
-.text:0000000000400080 _start:                                 ; DATA XREF: LOAD:0000000000400018↑o
-.text:0000000000400080                 sal     byte ptr [rcx], 48h ; Alternative name is '_start'
-.text:0000000000400080                                         ; shellcode
-.text:0000000000400084                 xor     [rax-26h], ecx
-.text:0000000000400087                 xor     [rsi], edi
-.text:0000000000400089                 mov     ebx, [rcx+rdx*4+0BAh]
-.text:0000000000400090                 add     [rax], al
-.text:0000000000400093                 add     [rax+11FFD0EBh], bh
-.text:0000000000400099                 fucomip st, st
-.text:000000000040009B
-.text:000000000040009B loc_40009B:                             ; CODE XREF: .text:loc_40009B↑j
-.text:000000000040009B                 loope   near ptr loc_40009B+1
-.text:000000000040009B ; ---------------------------------------------------------------------------
-.text:000000000040009D                 db 2 dup(0FFh), 0B8h
-.text:00000000004000A0                 dq 50FFF310000003Ch
-.text:00000000004000A0 _text           ends
-.text:00000000004000A0
-.text:00000000004000A0
-.text:00000000004000A0                 end _start
+0000000000000000 4831C0                          XOR RAX,RAX
+0000000000000003 4831DA                          XOR RDX,RBX
+0000000000000006 4831C9                          XOR RCX,RCX
+0000000000000009 B9E8030000                      MOV ECX,000003E8
+000000000000000E BA01000000                      MOV EDX,00000001
+0000000000000013 48B88877665544332211            MOV RAX,1122334455667788
+000000000000001D FFD0                            CALL RAX
+000000000000001F EBDF                            JMP 0000000000000000
 ```
-Following this, bumblebee injects itself into NtQueueApcThread by 
 
+Bumblebee replaces the 112233... address with the address of Sleep.exe.
+The injected payload gets inserted at the address following the jmp instruction. 
+Basically what happens here is that shi has the ability to prepare shellcode injection. 
+
+The shellcode gets sent remotely from the actor in addition to the shi command. The shi command gets the shellcode and injects via the above process. 
+
+#### dij
+The dij command in this sample also has the ability to inject shellcode, but the aditional capabilities of this command separate it from shi
+We see the same snippet of shellcode injection that we see in shi, but we also see dll injection capabilities via `NtQueueApcThread` 
+
+```c
+ ModuleHandleW = GetModuleHandleW(L"ntdll.dll");
+              if ( ModuleHandleW )
+              {
+                NtQueueApcThread = GetProcAddress(ModuleHandleW, "NtQueueApcThread");
+                (NtQueueApcThread)(v42, v27 + 360, v27, 0i64, 0);
+```
 
 
 #### dex
 Could be used to download and execute
-the `dex` command appears to queue bumblebee to create a randomly named .exe file
+the `dex` command appears to queue bumblebee to create a  .exe file
 
 
 
@@ -296,5 +304,7 @@ v6 = sub_14000E020(v30, "schtasks.exe /F /create /sc minute /mo 4 /TN \"", v26);
 #### gdt
 
 named pipes
+
 #### plg
-Domain generation and connection handling 
+
+
