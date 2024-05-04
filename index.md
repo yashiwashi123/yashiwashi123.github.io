@@ -8,5 +8,5 @@ layout: default
 
 [icedid_backconnect](icedid_backconnect.md)
 
-[bumblebee (wip)](bumblebee.md)
+[bumblebee](bumblebee.md)
 
