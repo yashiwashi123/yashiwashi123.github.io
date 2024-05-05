@@ -325,3 +325,23 @@ copy_string(a2, "Noise", 5ui64);
       v9 = "KN";
 ```
 
+### Unpacking
+
+Set generic breakpoints in bumblebee sample
+
+Running leads to Virtual Alloc as the first break
+We are interested in the return value, so we use run until return
+Set a breakpoint there, akak setting a breakpoint at the end of VirtualAlloc 
+The value of RAX changes we run
+Right click RAX when the value changes post run, and `Follow in Dump` to view the memory location
+Every  Time we run and the address in RAX gets changed, we can follow it in a new Dump, just make sure you change the dump (dumps 1-5)
+
+In the dump window, we can scroll until we find some intersting stuff (just to validate it's not all 0s), just non -zero values. Then we can right click and go to Follow in Memory Map
+From there we can right click on one of the addresses and click `Dump Memory to File`
+
+This is the start of what gets written to memory after the second dump
+![alt text](image.png)
+
+Another PE file gets dumped the third time too. 
+
+Loading these into IDA shows that the second dump is bumblebee
