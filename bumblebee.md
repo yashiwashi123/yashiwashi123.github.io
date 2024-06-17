@@ -330,6 +330,7 @@ copy_string(a2, "Noise", 5ui64);
 Set generic breakpoints in bumblebee sample
 
 Running leads to Virtual Alloc as the first break
+Step into Virtual Alloc
 We are interested in the return value, so we use run until return
 Set a breakpoint there, akak setting a breakpoint at the end of VirtualAlloc 
 The value of RAX changes we run

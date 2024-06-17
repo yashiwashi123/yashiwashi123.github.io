@@ -16,3 +16,5 @@ CreateThreadEx
 CreateProcessA
 CreateProcessW
 WriteProcessMemory
+
+ResumeThread SetThreadContext Beep ReadProcessMemory
