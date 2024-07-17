@@ -1,0 +1,17 @@
+Computer name                        \\DESKTOP-T7VFGR1
+Full Computer name                   DESKTOP-T7VFGR1
+User name                            Myrtus
+
+Workstation active on                
+	NetBT_Tcpip_{5DFB1DE9-0500-4CAD-AF89-6E8C372A43BB} (000C2901D8E9)
+
+Software version                     Windows 10 Pro
+
+Workstation domain                   WORKGROUP
+Logon domain                         DESKTOP-T7VFGR1
+
+COM Open Timeout (sec)               0
+COM Send Count (byte)                16
+COM Send Timeout (msec)              250
+The command completed successfully.
+
