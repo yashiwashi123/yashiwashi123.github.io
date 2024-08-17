@@ -6,11 +6,10 @@ import random
 import string
 from faker import Faker
 from time import sleep
-import warnings
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import hashlib
+import urllib3
 
-# Suppress only the single InsecureRequestWarning from urllib3
-warnings.simplefilter('ignore', InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #url = "https://astopertat.com/live/"
 #Enrcryption Key: qNfSHTVKEU7mknHSFrQCwp0mmQfXUNPIcA66gezNz49qQOVX0P
 
@@ -177,14 +176,27 @@ class latro_bot:
             print(f"COMMAND_NUM: {command_num}")
             if command_num == '21': 
                 bin_file = command_list[-1].replace('front://', '')
+                bin_file = bin_file.strip()
+                bin_file = bin_file.replace('\n', '')
                 url = self.url.replace('live/', 'files/')
+                url = url.strip()
+                url = url.replace('\n', '')
                 url = url + bin_file
                 print("PAYLOAD URL")
                 print(url)
                 try: 
-                    response = requests.get( url = url, headers = self.headers, verify = False)
-                    with open('latro_cmd_21.bin' , 'w') as outfile: 
-                        outfile.write(response.text)
+                    headers = {
+                        # "Authorization": "Basic " + auth_header.decode("utf-8"),
+                        # "Connection": "Keep-Alive",
+                        "User-Agent": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Tob 1.1)"
+                    }
+                    response = requests.get( url = url, headers = headers, cookies = "", verify = False)
+                    if response.status_code == 200:
+                        content = response.content
+                        sample_hash = hashlib.md5(content).hexdigest()
+                        print("WE MADE IT")
+                        with open(f'latro_cmd_21_{sample_hash}.bin' , 'wb') as outfile: 
+                            outfile.write(content)
                 except Exception as e: 
                     print(e)
             
@@ -234,6 +246,6 @@ class latro_bot:
 
 
 #test_bot = latro_bot(key= 'qNfSHTVKEU7mknHSFrQCwp0mmQfXUNPIcA66gezNz49qQOVX0P', campaign_id='Jupiter', url='https://riscoarchez.com/live/')
-test_bot = latro_bot(counter = 17, key= 'EhAyPSHvva9CvL6OIddDJvDXHJjoMsqXyjraKyYmXFqDGdAYyO', campaign_id='Venus', url='https://stripplasst.com/live/')
+test_bot = latro_bot(counter = 0, key= 'EhAyPSHvva9CvL6OIddDJvDXHJjoMsqXyjraKyYmXFqDGdAYyO', campaign_id='Venus', url='https://isomicrotich.com/live/')
 print(test_bot.counter)
 test_bot.comms_main()
