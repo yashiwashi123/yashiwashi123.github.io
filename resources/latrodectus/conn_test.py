@@ -15,10 +15,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class latro_bot: 
-    def __init__(self, key, campaign_id, url, counter = None):
+    def __init__(self, key, campaign_id, url, ver_minor, direction = None, counter = None):
         self.key = key
         self.campaign_id = campaign_id
         self.url = url
+        self.ver_minor = ver_minor
+        self.direction = direction
         if not counter: 
             self.counter = 0
         else: 
@@ -39,6 +41,7 @@ class latro_bot:
             '20':self.command_20_handle
         }
         self.previous_command = None
+        self.failed_conn_counter = 0 
 
     def campaign_id_hash(self): 
         self.campaign_fnva = fnv.hash(self.campaign_id.encode("utf-8"), bits=32)
@@ -53,7 +56,7 @@ class latro_bot:
         self.username = fake.user_name()
 
     
-    def packet_format_string(self, username=None, type_ = 1, os=6, arch=1, ver_major=1, ver_minor=3, up=2, direction=None, guid = None, counter = None, packet_type= None):
+    def packet_format_string(self, username=None, type_ = 1, os=6, arch=1, ver_major=1, ver_minor=None, up=2, direction=None, guid = None, counter = None, packet_type= None):
         self.campaign_id_hash()
         group = self.campaign_fnva
         if not guid:
@@ -64,6 +67,8 @@ class latro_bot:
             direction = self.url
         if not username: 
             username = self.username
+        if not ver_minor: 
+            ver_minor = self.ver_minor
         
         standard_packet =  f"counter={counter}&type={type_}&guid={guid}&os={os}&arch={arch}&username={username}&group={group}&ver={ver_major}.{ver_minor}&up={up}&direction={direction}"
         if packet_type == '2': 
@@ -100,11 +105,13 @@ class latro_bot:
         if not url: 
             url = self.url
         data = packet_data
-        print(data)
+        #print(data)
         data = self.crypt_packet_data(data)
-        print(data)
+        #print(data)
         r = requests.post(url, headers = self.headers, data = data, verify=False)
-        print(r.text)
+        #print(r.status_code)
+        #print(r.text)
+        
         return r.text
 
     def decrypt_packet(self, packet): 
@@ -120,19 +127,7 @@ class latro_bot:
         pass
     
     def command_4_handle(self):
-        """
-        ipconfig=
-        systeminfo=
-        domain_trusts=
-        domain_trusts_all=
-        net_view_all_domain=
-        net_view_all=
-        net_group=
-        wmic=
-        net_config_ws=
-        net_wmic_av=
-        whoami_group=
-        """
+
         packet = ""
         packet += "ipconfig=%s&" % self.get_replaced_template("ipconfig")
         packet += "systeminfo=%s&" % self.get_replaced_template("systeminfo")
@@ -207,7 +202,7 @@ class latro_bot:
     def comms_command_handler(self, decrypted_data= None): 
         if 'COMMAND' in decrypted_data:
             command_list = decrypted_data.split('|')
-            command_num = command_list[-2]
+            command_num = command_list[1] 
             print(command_num)
             print(type(command_num))
             if command_num in self.command_dict: 
@@ -220,8 +215,16 @@ class latro_bot:
         else:
             pass
     
+    def response_parser(self, response_text):
+        lines = response_text.split('\n')
+        for line in lines: 
+            line = line.strip()
+            if line.startswith('COMMAND'): 
+                return line
+
+    
     def comms_main(self): 
-        while True: 
+        while self.failed_conn_counter < 10: 
             if self.previous_command: 
 
                 packet_data = self.packet_format_string(packet_type= self.previous_command)
@@ -229,23 +232,37 @@ class latro_bot:
             else: 
                 packet_data = self.packet_format_string()
             self.packet_data = packet_data
-            response_data = self.registration_post_request(packet_data)
+            try:
+                response_data = self.registration_post_request(packet_data)
+                self.failed_conn_counter = 0
+            except: 
+                self.failed_conn_counter += 1
+                sleep(59)
+                continue
             self.next_packet()
             decrypted_data = self.decrypt_packet(response_data)
             self.response_command = decrypted_data
-            print(decrypted_data)
-            try:
-                self.comms_command_handler(decrypted_data)
-            except:
+            if '|' in decrypted_data: 
                 print(decrypted_data)
+                command_line = self.response_parser(decrypted_data)
+                print(command_line)
+                if command_line is not None: 
+                    try:
+                        self.comms_command_handler(command_line)
+                    except:
+                        print(decrypted_data)
 
             sleep(29)
+        print("Comms failed 10 times in a row")
 
 
 
 
 
 #test_bot = latro_bot(key= 'qNfSHTVKEU7mknHSFrQCwp0mmQfXUNPIcA66gezNz49qQOVX0P', campaign_id='Jupiter', url='https://riscoarchez.com/live/')
-test_bot = latro_bot(counter = 0, key= 'EhAyPSHvva9CvL6OIddDJvDXHJjoMsqXyjraKyYmXFqDGdAYyO', campaign_id='Venus', url='https://isomicrotich.com/live/')
+#test_bot = latro_bot(counter = 0, key= 'EhAyPSHvva9CvL6OIddDJvDXHJjoMsqXyjraKyYmXFqDGdAYyO', campaign_id='Venus', url='https://isomicrotich.com/live/')
+#test_bot = latro_bot(counter = 0, key= '9edoY7pK6eQfntcLBNU1WSkauwf1sHj4I8vTuAddXvPwYbJPeP', campaign_id='Delta', url="https://pomaspoteraka.com/test/", ver_minor=5)
+test_bot = latro_bot(counter = 0, key= 'xeX0AUeyr604cj5E2jcyHtNkGkFtnWSnde1yFXuAAZgo9LobXA', campaign_id='Alpha', url="https://wernugemar.com/test/", ver_minor=7)
+
 print(test_bot.counter)
 test_bot.comms_main()

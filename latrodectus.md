@@ -17,7 +17,7 @@ struct _LIST_ENTRY *__fastcall loop_and_hash_over_loaded_modules_in_peb(int a1)
 }
 ```
 
-CRC32 hash algorithm gets used to obfuscate api function names 
+CRC32 hash algorithm is used to obfuscate api function names. You can deobfucsate this via the HashDB plugin in IDA. 
 ```c
  v2[0] = NtAllocateVirtualMemory_0;
   v3 = &unk_1AC909A1B08;
@@ -46,9 +46,9 @@ CRC32 hash algorithm gets used to obfuscate api function names
   v26 = 0x183679F2;
   ```
   
-  Once we go through all of the hashes and convert them to actual win api functions, we can start analyzing the malware
+  Once we go through all of the hashes and convert them to actual win api functions, we can finally start to get a sense of what latrodectus actually does.
 
-  Here we find an encrypted string that gets decrypted and passed to CreateMutexW
+  First we find an encrypted string that gets decrypted and passed to CreateMutexW
 
   ```c
    string_decryption(&encrypted_mutex, decrypted_mutex_string);
@@ -86,6 +86,10 @@ CRC32 hash algorithm gets used to obfuscate api function names
 BackGround: The stealer is gathered by emulating an infected host. One of the commands that gets sent is an instruction to download an additional payload from a specified uri on the C2 host. The following is an analysis of the stealer
 
 The stealer code shares functions with latrodectus, specifically the resolution of win API functions via their hash. 
+
+You will need to deobfuscate the win API calls in order to view them. 
+
+Unlike the loader, the stealer module does not obfuscate its strings. They are in plaintext. My speculative explanation for this is as follows: They follow the assumption that only legitimate bots could access this code, therefor obfuscating the strings is superfluous. 
 ```c
   v5 = NtAllocateVirtualMemory_0;
   v6[0] = (__int64)&assignment_func;

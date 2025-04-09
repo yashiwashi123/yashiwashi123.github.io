@@ -1,11 +1,7 @@
 {
-	"folders": [
-		{
-			"path": "../../scripts"
-		},
-		{
-			"path": "."
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }

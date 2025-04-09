@@ -1,6 +1,9 @@
 # Reference Code Used: https://github.com/leandrofroes/malware-research/blob/main/Latrodectus/binja_latrodectus_str_dec.py
 
 import idaapi, idc, idautils
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
+import struct
 
 def find_fn_Xrefs(fn_addr):
 
@@ -69,6 +72,32 @@ def decode_str(s) -> str:
 	
 	return ""
 
+def decrypt_aes(a1, key): 
+    # Extract the first two bytes to get the size of the encrypted data
+    size = struct.unpack('>H', a1[:2])[0]  # Big-endian 2-byte size
+
+    # Extract the next 16 bytes as the nonce/counter for AES CTR mode
+    nonce = a1[2:18]
+
+    # Extract the actual encrypted data based on the size
+    encrypted_data = a1[18:18 + size]
+
+    # Initialize AES cipher in CTR mode with the given key and nonce
+    cipher = Cipher(algorithms.AES(key), modes.CTR(nonce), backend=default_backend())
+
+    # Create a decryptor object
+    decryptor = cipher.decryptor()
+
+    # Decrypt the encrypted data
+    decrypted = decryptor.update(encrypted_data) + decryptor.finalize()
+
+    try:
+        decrypted_ascii = decrypted.decode('ascii')
+    except UnicodeDecodeError:
+        decrypted_ascii = decrypted.decode('utf-8', errors='replace')  # Replace non-decodable chars
+
+    return decrypted_ascii
+
 
 def decrypt(a1):
     result = bytearray()
@@ -106,7 +135,7 @@ def set_comment(address,text):
     set_hexrays_comment(address,text)
 
 
-decryption_fn_address = 0x00000001800099FC
+decryption_fn_address = 0x000000014000C5EC
 # get the xrefs to the function address
 xref_list = find_fn_Xrefs(decryption_fn_address)
 # for each ref in the array
@@ -123,6 +152,6 @@ for ref in xref_list:
     enc_value = get_bytes_from_address(arg_address, 6 + result_str_len)
     if b'\xff\xff\xff\xff' not in enc_value:
         print(f"Debug: len : {len(enc_value)}, enc_value: {enc_value}")
-        dec_string = decrypt(enc_value)
+        dec_string = decrypt_aes(enc_value)
         print(f"Decrypted String: {dec_string}")
         set_comment(ref['normal'], dec_string)

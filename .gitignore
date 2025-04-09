@@ -1,0 +1,6 @@
+*.py
+shellcode*
+_config.yml
+scripts.code-workspace
+future/
+warmcookie/
