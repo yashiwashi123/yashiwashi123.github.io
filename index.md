@@ -10,5 +10,5 @@ layout: default
 
 [bumblebee](bumblebee.md)
 
-[latrodectur](latrodectus.md)
+[latrodectus](latrodectus.md)
 
