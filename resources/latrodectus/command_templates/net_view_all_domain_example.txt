@@ -1,0 +1,4 @@
+System error 6118 has occurred.
+
+The list of servers for this workgroup is not currently available
+
