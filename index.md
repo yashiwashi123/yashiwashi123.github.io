@@ -6,9 +6,11 @@ layout: default
 ## Table of Contents 
 
 
-[icedid_backconnect](icedid_backconnect.md)
+[icedid_backconnect - 2023](icedid_backconnect.md)
 
-[bumblebee](bumblebee.md)
+[bumblebee - 2024](bumblebee.md)
 
-[latrodectus](latrodectus.md)
+[latrodectus - 2024](latrodectus.md)
+
+[stealc - 2025](stealc.md)
 
