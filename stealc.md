@@ -1,6 +1,7 @@
 **Background** Stealc analysis has been an on again off again project over the past year. 
 
-Here is a config extractor
+
+Here is a config extractor I wrote. It is based on finding and scanning the data section where values like the botid and keys are stored. I found that the botid is initiallied with spaces and the max length is 27 bytes. From there we use the string decrypt key to find the c2 url and uri. 
 ```python
 
 import re
